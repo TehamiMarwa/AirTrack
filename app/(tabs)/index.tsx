@@ -49,12 +49,19 @@ const isCampaignActive = (timestamp?: string) => {
   useEffect(() => {
 
   const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+    console.log("🔥 AUTH STATE:", user?.uid, user?.email);
 
     if (!user) {
-      setUsername("");
-      setDevices([]);
-      return;
-    }
+  console.log("❌ NO USER LOGGED IN");
+
+  setUsername("");
+  setDevices([]);
+
+  router.replace("/login");
+
+  return;
+}
+ console.log("✅ USER LOGGED IN:", user.uid);
 
     // 🔥 USERNAME
     const userRef = ref(db, `users/${user.uid}/name`);
