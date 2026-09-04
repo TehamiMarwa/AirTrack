@@ -74,7 +74,7 @@ useEffect(() => {
 }, []);
   const { id, campaign } = useLocalSearchParams();
   const [deviceId, setDeviceId] = useState(id || "ESP32_001");
-  const [selectedCampaign, setSelectedCampaign] = useState(campaign || "garage_upv");
+  const [selectedCampaign, setSelectedCampaign] = useState(campaign || "garage_severo_ochoa");
 // 🔥 Nuevo estado para almacenar los dispositivos de Firebase
 const [devicesList, setDevicesList] = useState<{ id: string; name: string }[]>([]);
 
@@ -106,7 +106,7 @@ const [devicesList, setDevicesList] = useState<{ id: string; name: string }[]>([
   /* ---------------- DOWNLOAD REAL ---------------- */
 
   const downloadCSV = async () => {
-    let csv = "DateTime,PM2.5,PM10,NOx\n";
+    let csv = "DateTime,PM2.5,PM10,NOxIndex,srawNox\n";
     const start = new Date(fromDate.getTime());
     const end = new Date(toDate.getTime());
 
@@ -127,7 +127,7 @@ const [devicesList, setDevicesList] = useState<{ id: string; name: string }[]>([
           if (date < fromDate || date > toDate) return;
 
           const label = date.toLocaleString();
-          csv += `${label},${point.pm25 || 0},${point.pm10 || 0},${point.noxIndex || 0}\n`;
+          csv += `${label},${point.pm25 ?? 0},${point.pm10 ?? 0},${point.noxIndex ?? 0},${point.srawNox ?? 0}\n`;
         });
       }
       start.setDate(start.getDate() + 1);
@@ -174,6 +174,7 @@ const [devicesList, setDevicesList] = useState<{ id: string; name: string }[]>([
               <td>${point.pm25 || 0}</td>
               <td>${point.pm10 || 0}</td>
               <td>${point.noxIndex || 0}</td>
+              <td>${point.srawNox ?? 0}</td>
             </tr>
           `;
         });
@@ -193,6 +194,7 @@ const [devicesList, setDevicesList] = useState<{ id: string; name: string }[]>([
           <th>PM2.5 (µg/m³)</th>
           <th>PM10 (µg/m³)</th>
           <th>NOx Index</th>
+          <th>srawNox</th>
         </tr>
 
         ${rows}
@@ -235,9 +237,9 @@ const list = Object.keys(data).map((campaignId) => ({
 setDevicesList(list);
 
     // Opcional: Si quieres que por defecto se seleccione el primer dispositivo de la lista real:
-    if (list.length > 0) {
-      setSelectedCampaign(list[0].id);
-    }
+    //if (list.length > 0) {
+    //  setSelectedCampaign(list[0].id);
+   // }
   } catch (error) {
     console.error("Error al cargar los dispositivos:", error);
   }
@@ -452,7 +454,7 @@ setDevicesList(list);
             onPress={() => setSelectedCampaign(device.id)}
           >
             <Text style={styles.metricText}>
-              {device.id} {device.name ? `– ${device.name}` : ""}
+             {device.name || device.id}
             </Text>
           </TouchableOpacity>
         ))}
@@ -592,7 +594,7 @@ setDevicesList(list);
 
       {/* --- GRÁFICO NOx --- */}
       <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 15, marginBottom: 5 }}>
-        <Text style={{ color: "#FF4C4C" }}>NOx</Text>
+        <Text style={{ color: "#FF4C4C" }}>NOx Index</Text>
       </View>
 
       <LineChart

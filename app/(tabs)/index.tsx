@@ -1,6 +1,13 @@
 import { onValue, ref } from "firebase/database";
 import { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { auth, db } from "../../src/services/firebase";
 import { useRouter } from "expo-router";
 import * as Location from "expo-location";
@@ -263,61 +270,107 @@ const getLocation = async () => {
 <TouchableOpacity
   style={[styles.addButton, { marginTop: 8 }]}
   onPress={async () => {
-    try {
-      console.log("🔥 SAVE GPS CLICK");
+    Alert.alert(
+    "TEST GPS",
+    "El botón Save GPS Point funciona"
+  );
 
-      const danaDevice = devices.find(
-        (d) =>
-          d.deviceId === "ESP32_001" &&
-          d.id === "outdoor_dana"
+  console.log("🔥 SAVE GPS CLICK");
+  try {
+
+    const outdoorDevice = devices.find(
+      (d) =>
+        d.deviceId === "ESP32_001" &&
+        d.id === "outdoor"
+    );
+
+    console.log("🌍 outdoorDevice:", outdoorDevice);
+
+    if (!outdoorDevice) {
+      Alert.alert(
+        "Error",
+        "No se encontró la campaña outdoor."
       );
+      return;
+    }
 
-      if (!danaDevice?.current) {
-        console.log("❌ No hay datos actuales del sensor");
-        return;
-      }
-
-      const location = await getLocation();
-
-      if (!location) {
-        console.log("❌ No se pudo obtener GPS");
-        return;
-      }
-
-      const current = danaDevice.current;
-
-      const date = new Date().toISOString().split("T")[0];
-      const timestamp = Date.now();
-
-      await set(
-        ref(
-          db,
-          `devices/ESP32_001/campaigns/outdoor_dana/history/heatmap/${date}/${timestamp}`
-        ),
-        {
-          lat: location.lat,
-          lng: location.lng,
-
-          pm25: current.pm25 ?? null,
-          pm10: current.pm10 ?? null,
-          noxIndex: current.noxIndex ?? null,
-
-          timestamp: new Date().toISOString(),
-        }
+    if (!outdoorDevice.current) {
+      Alert.alert(
+        "Error",
+        "No hay datos actuales del sensor outdoor."
       );
+      return;
+    }
 
-      console.log("✅ GPS POINT GUARDADO", {
+    const current = outdoorDevice.current;
+
+    console.log("📊 CURRENT:", current);
+
+    const location = await getLocation();
+
+    if (!location) {
+      Alert.alert(
+        "Error",
+        "No se pudo obtener la ubicación GPS."
+      );
+      return;
+    }
+
+    console.log("📍 LOCATION:", location);
+
+    const date = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    const timestamp = Date.now();
+
+    const path =
+      `devices/ESP32_001/campaigns/outdoor/` +
+      `history/heatmap/${date}/${timestamp}`;
+
+    console.log("🔥 FIREBASE PATH:", path);
+
+    await set(
+      ref(db, path),
+      {
         lat: location.lat,
         lng: location.lng,
-        pm25: current.pm25,
-        pm10: current.pm10,
-        noxIndex: current.noxIndex,
-      });
+        accuracy: location.accuracy ?? null,
 
-    } catch (error) {
-      console.log("❌ ERROR GUARDANDO GPS:", error);
-    }
-  }}
+        pm25: current.pm25 ?? null,
+        pm10: current.pm10 ?? null,
+        noxIndex: current.noxIndex ?? null,
+        srawNox: current.srawNox ?? null,
+
+        sensorTimestamp:
+          current.timestamp ?? null,
+
+        timestamp:
+          new Date().toISOString(),
+      }
+    );
+
+    console.log(
+      "✅ GPS POINT GUARDADO"
+    );
+
+    Alert.alert(
+      "Guardado",
+      "GPS Point guardado correctamente."
+    );
+
+  } catch (error) {
+    console.log(
+      "❌ ERROR GUARDANDO GPS:",
+      error
+    );
+
+    Alert.alert(
+      "Error",
+      "No se pudo guardar el GPS Point."
+    );
+  }
+}}
 >
   <Text style={styles.addButtonText}>
     Save GPS Point
