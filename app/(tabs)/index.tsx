@@ -251,20 +251,6 @@ const getLocation = async () => {
     <Text style={styles.addButtonText}>Add Device</Text>
   </TouchableOpacity>
    
-    {/* Change WiFi */}
- <TouchableOpacity
-  style={[styles.addButton, { marginTop: 8, backgroundColor: "#17A84B" }]}
-  onPress={async () => {
-    await set(
-      ref(db, "devices/ESP32_001/commands/reset_wifi"),
-      true
-    );
-
-    await openWifiSettings();
-  }}
->
-  <Text style={styles.addButtonText}>Change Device WiFi</Text>
-</TouchableOpacity>
 
   {/* SAVE GPS */}
 <TouchableOpacity
